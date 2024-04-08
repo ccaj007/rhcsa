@@ -1,5 +1,13 @@
 `dnf install -y setroubles* policycore*`
 
+# reset root
+```
+mount -o remount,rw /
+passwd
+touch /.autorelabel
+exec /usr/lib/systemd/systemd
+```
+
 # Documentation
 ```
 Mandb
@@ -7,28 +15,48 @@ Man -k
 Info
 /usr/share/doc
 ```
+# Logging
+```
+/var/log/messages
+journalctl
+```
+set up persistent logging
+
+`mkdir /var/log/journal`
+
+`journalctl --flush` to flush the files from `/run/log/journal` to `/var/log/journal`
+
 # SSH
 ```
 ssh-keygen
 ssh-copy-id user@server
 ssh -p 22 user@server
 ```
-# SSH Security
+SSH Security
+
 •	Configure it in `/etc/ssh/sshd_conf`
+
 •	Enable root login with the `PermitRootLogin yes` value
 
+# Tuning Profiles
+```
+dnf install -y tuned
+tuned-adm profile
+/etc/tuned/tuned-main.conf
+```
 # Repos
+`man dnf.conf`  find config values
 ```
 dnf config-manager --addrepo=http://reposerver.example.com/BaseOS
 dnf config-manager --add-repo=file:///repo/BaseOS
 ```
-edit the repository file in /etc/yum.conf.d after adding it, so that it includes the line gpgcheck=0
+edit the repository file in /etc/yum.conf.d after adding it, so that it includes the line 
+`gpgcheck=0`
 verify:
 ```
 dnf repolist all
 dnf install telnet
 ```
-
 # web / http
 You will configure a web server running on your system serving content using a non-standard port (82)
 
@@ -57,7 +85,6 @@ PASS_MAX_DAYS 90
 PASS_MIN_DAYS 15
 PASS_WARN_AGE 7
 ```
-
 # SELinux
 •	Install everything under keywords policycoreutils and setroubleshoot 
 `dnf install -y policycore* setrouble*`
@@ -80,34 +107,119 @@ semanage port --add -t http_port_t -p tcp 82 to add tcp 82 to the httpd_port_t l
 ```
 
 # Time, timezone, NTP, hostname
-•	man -k chron
-•	timedatectl
-•	/etc/chrony.conf
-•	hostnamectl
-•	nmcli general hostname <hostname>
+```
+man -k chron
+timedatectl
+/etc/chrony.conf
+hostnamectl
+nmcli general hostname <hostname>
+```
+# Storage Management
+```
+fdisk
+man mkfs
+mkswap
+swapon
+swapoff
+```
+Persistent Mounts
+```
+/etc/fstab
+lsblk
+blkid
+swapon -a
+wipefs -a  # equivalent to diskpart clean
+```
+Logical Volume Mangement
+```
+pvs
+pvcreate
+vgs
+vgcreate
+lvs
+lvcreate
+```
+# File Systems
+NFS
+```
+/etc/exports
+/etc/fstab
+firewall-cmd --add-service {nfs,rpc-bind,mountd} --permanent
+firewall-cmd --reload
+firewall-cmd --list-all
+```
+autofs
+```
+/etc/auto.master
+  /mnt/nfs_home  /etc/auto.home
+/etc/auto.home
+  *  192.168.55.71:/export/home/&
+```
+# File Permissions
+`umask`  sets default permission. 0002 says to set 755 on directories and 664 on files. 0022 says to set 755 on directories and 644 on files
+`/etc/profile.d/`  change globally, set it on per-user basis by adding it to `~/.bashrc`. Set it for newly created users only under `/etc/skel/.bashrc`. you can also set it under `/etc/login.defs`
+`chmod g+s`  set-GID bit
+`chmod u+s`  set-UID bit
+`chmod +t`   sticky bit
+
+# Stratis
+filesystem is always `xfs`
+`defaults` is appended with the startis value `defaults,x-systemd.requires=stratisd.service`
+How to find the mount options, since it's not in man stratis
+`man -k mount`
+`systemd.mount (5)`
+`man 5 systemd.mount`  search by /fstab
+`x-systemd.requires=`  first part
+`systemctl status stratisd`  will give you second part: `stratisd.service`
+
+# VDO
+```
+dnf install -y vdo
+man lvmvdo
+```
+file system can be `xfs` or `ext4`
+```
+vgcreate vdo-vg /dev/sdb
+lvcreate --type vdo -n web_storage -l 100%FREE -V 30G vdo-vg
+```
+* Heirarchy: Physical Volume > Volume Group > Pool > VDO Logical Volume
+* `lvcreate` will also create the pool if you don't specify it, much like `vgcreate`  will create the physical volume
+* when creating the filesystem on a VDO volume, add the `-K` option
+  * `mkfs.ext4 -K /dev/vdo-vg/web_storage`
+* `vdostats` will show you what's going on
+
 
 # Containers
 •	podman and skopeo
-•	podman search redis --filter=is-official
-o	Find that in man podman-search
-•	Rootless config https://www.redhat.com/sysadmin/rootless-podman-user-namespace-modes
-•	dnf install -y container-tools
-•	less /etc/containers/registries.conf
-•	podman --help | less
-•	podman info | less
-•	podman login registry.access.redhat.com
-•	podman search registry.access.redhat.com/ubi9 | less
-•	podman pull registry.access.redhat.com/ubi9/ubi:latest
-•	podman images - List images
-•	skopeo inspect docker://registry.access.redhat.com/ubi9/ubi:latest | less
-•	podman run -it registry.access.redhat.com/ubi9/ubi:latest
-•	podman ps --all - List containers
-•	podman rm -a - Remove all containers
-•	podman images
-•	podman rmi registry.access.redhat.com/ubi9/ubi:latest - Remove specific image
+```
+podman search redis --filter=is-official
+dnf install -y container-tools
+podman images # List images
+podman run -it registry.access.redhat.com/ubi9/ubi:latest
+podman ps --all # List containers
+podman rm -a # Remove all containers
+podman images
+podman rmi registry.access.redhat.com/ubi9/ubi:latest # Remove specific image
+```
 Recap
+
 •	Basic commands are podman info, podman login, podman search, podman pull, podman images, skopeo inspect, podman inspect, podman run, podman ps, podman rm, podman rmi...
+
 •	podman run creates and starts a container
+
 •	podman stop stops a running container
+
 •	podman start starts an existing container
+# Containers as Services
+```
+loginctl enable-linger <username>
+loginctl show-user <username>
+systemctl --user daemon-reload
+systemctl --user start|stop|enable UNIT
+mkdir ~/.config/systemd/user/
+cd mkdir ~/.config/systemd/user/
+podman generate systemd
+```
+
+
 
