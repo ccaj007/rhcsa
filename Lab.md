@@ -12,7 +12,7 @@ http://server01/rhel9/BaseOS/
 ## NFS
 
 ## Container
-http://server01/materials/Containerfile
+http://server01/materials/image.tar
 
 # Questions
 * break into node02
