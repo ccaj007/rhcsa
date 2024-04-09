@@ -1,7 +1,9 @@
 # Questions
 
 1   break into node02
+    
     setup repo on node02
+   
         http://server01/rhel9/AppStream/
         http://server01/rhel9/BaseOS/
 
@@ -63,6 +65,68 @@ semanage port -a -t http_port_t -p tcp 82
 systemctl restart httpd
 systemctl enable httpd
 
+```
+
+4	Create a user devuser1 and build image(Name pdfconvert) from url docker.io/openviewdev/pdfconverter
+	run  a container named monitor using the newly created image
+
+ solution 4
+```
+dnf install -y wget
+dnf install -y podman
+useradd devuser1
+passwd devuser1
+
+# appserver3 is prepped with above
+
+ssh devuser1@appserver3
+podman pull docker.io/openviewdev/pdfconverter
+podman images # see image
+podman run -dit --name monitor [image ID]
+podman ps
+podman exec -it monitor /bin/bash # confirm you create container
+exit
+```
+5	create a container using the image pdfconvert which has been created above
+
+	* run container named pdfconverter
+ 
+ 	* attach the volume /opt/input and /opt/processed with container /action/incoming/ and /action/outgoing/ respectively
+
+solution 5
+```
+mkdir -p /opt/input /opt/processed
+setfacl -m u:devuser1:rwx /opt/input
+setfacl -m u:devuser1:rwx /opt/processed
+
+man semanage fcontext | grep web
+
+semanage fcontext -a -t container_file_t "/opt/input(/.*)?"
+semanage fcontext -a -t container_file_t "/opt/processed(/.*)?"
+restorecon -R -v /opt/
+
+loginctl enable-linger devuser1
+
+ssh devuser1@ipaddress
+podman run -dit --name pdfconverter -v /opt/input/:/action/incoming/ -v /opt/processed/:/action/outgoing/ [image_id]
+
+# login pdfconverter container to validate
+pdoman exec -it pdfconverter /bin/bash
+cd /action/incomiing
+```
+6	create a service container-pdfconverter.service
+	ensure that container-pdfconverter.service will run automatically at system boot
+```
+man -k podman-generate
+man podman-generate-systemd
+
+mkdir -p ~/.config/systemd/user
+cd ~/.config/systemd/user
+podman generate systemd --name pdfconverter --files --new
+systemctl --user daemon-reload
+systemctl --user enable --now container-pdfconverter.service
+systemctl --user reload container-pdfconverter.service
 
 ```
+
 
