@@ -13,11 +13,3 @@ http://server01/rhel9/BaseOS/
 
 ## Container
 http://server01/materials/image.tar
-
-# Questions
-* break into node02
-* enable ssh, do not change port
-* allow root to ssh
-* setup repo on node02
-  * http://server01/rhel9/AppStream/
-  * http://server01/rhel9/BaseOS/
