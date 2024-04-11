@@ -220,6 +220,34 @@ mkdir ~/.config/systemd/user/
 cd mkdir ~/.config/systemd/user/
 podman generate systemd
 ```
+# NFS
+## Configure NFS server and share directory
+```
+dnf install -y nfs* rpc*
+systemctl enable --now nfs-server
+systemctl status nfs-server
+firwall-cmd --add-service={nfs,mountd,rpc-bind} --permanent
+firewall-cmd --reload
+firewall-cmd --list-all
+```
+## Configure NFS share
+```
+mkdir /shared
+chmod 777 /shared
+vi /etc/exports
+  /shared  *(fw,no_root_squash)
+```
+# autofs
+user must be created on server with same UID on NFS server
+```
+dnf install -y autofs nfs-utils
+showmount -e server01
+vim /etc/auto.master
+  /shared  /etc/auto.shared
+vim /etc/auto.shared
+  * -rw server01:/shared/&
+systemctl restart autofs
+```
 
 
 
