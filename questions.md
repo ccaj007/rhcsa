@@ -23,7 +23,7 @@ dnf repolist  # should show you local path now
 dnf install telnet # configm
 ```
 
-2      enable ssh, do not change port
+2      enable ssh on node02, do not change port
     allow root to ssh
 
 solution 2
@@ -50,7 +50,7 @@ sudo vim /etc/ssh/sshd_config
 
 systemctl enable --now sshd
 ```
-3  http service on non-standard port 82. the system is not able to connect to httpd service at port 82, fix the issue.
+3  http service on non-standard port 82 on appserver3 (10.0.0.13). the system is not able to connect to httpd service at port 82, fix the issue.
 	don't change files under /var/www/html directory, should be accessible on port 82 and should start at boot time
 
  solution 3
@@ -64,6 +64,9 @@ man semanage-port
 semanage port -a -t http_port_t -p tcp 82
 systemctl restart httpd
 systemctl enable httpd
+
+fireall-cmd --add-port=82/tcp --permanent
+firewall-cmd --reload
 
 ```
 
