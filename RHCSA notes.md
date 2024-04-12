@@ -164,13 +164,25 @@ autofs
 
 # Stratis
 filesystem is always `xfs`
+
 `defaults` is appended with the startis value `defaults,x-systemd.requires=stratisd.service`
+
 How to find the mount options, since it's not in man stratis
 `man -k mount`
 `systemd.mount (5)`
 `man 5 systemd.mount`  search by /fstab
 `x-systemd.requires=`  first part
 `systemctl status stratisd`  will give you second part: `stratisd.service`
+```
+dnf install -y stratis*
+systemctl enable --now stratisd
+stratis pool create mypool /dev/sdc
+stratis pool list
+stratis fs create mypool stratis1
+stratis fs
+vim /etc/fstab
+UUID=<UUID>  /stratis1  xfs  defaults,x-systemd.requires=stratisd.service  0 0
+```
 
 # VDO
 ```
