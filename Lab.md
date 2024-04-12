@@ -9,6 +9,9 @@ http://server01/rhel9/AppStream/
 
 http://server01/rhel9/BaseOS/
 
+## web server
+10.0.0.15       appserver3
+
 ## NFS
 
 ## Container
