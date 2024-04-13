@@ -118,6 +118,7 @@ firewall-cmd --reload
 
 8	Create a user devuser1 and build image(Name pdfconvert) from url docker.io/openviewdev/pdfconverter
 	run  a container named monitor using the newly created image
+ 	run on appserver3
 
 solution 8
 ```
