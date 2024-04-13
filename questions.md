@@ -138,11 +138,9 @@ sudo podman ps
 sudo podman exec -it pdfconvert /bin/bash # confirm you create container
 exit
 ```
-9	create a container using the image monitor which has been created above
-
+9	As devuser1 create a container using the image monitor which has been created above
 	* run container named monitor
- 
- 	* attach the volume /opt/input and /opt/processed with container /action/incoming/ and /action/outgoing/ respectively
+  	* attach the volume /opt/input and /opt/processed with container /action/incoming/ and /action/outgoing/ respectively
 
 solution 9
 ```
@@ -151,7 +149,8 @@ mkdir -p /opt/input /opt/processed
 setfacl -m u:devuser1:rwx /opt/input
 setfacl -m u:devuser1:rwx /opt/processed
 
-man semanage fcontext | grep web
+man semanage-fcontext # /EXAMPLE
+semanage fcontext -l | grep containerd
 
 semanage fcontext -a -t container_file_t "/opt/input(/.*)?"
 semanage fcontext -a -t container_file_t "/opt/processed(/.*)?"
