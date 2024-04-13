@@ -82,12 +82,13 @@ passwd devuser1
 
 # appserver3 is prepped with above
 
+# add devuser1 with sudo permission
 ssh devuser1@appserver3
-podman pull docker.io/openviewdev/pdfconverter
-podman images # see image
-podman run -dit --name pdfconvert [image ID]
-podman ps
-podman exec -it pdfconvert /bin/bash # confirm you create container
+sudo podman pull docker.io/openviewdev/pdfconverter
+sudo podman images # see image
+sudo podman run -dit --name pdfconvert [image ID]
+sudo podman ps
+sudo podman exec -it pdfconvert /bin/bash # confirm you create container
 exit
 ```
 5	create a container using the image monitor which has been created above
@@ -130,7 +131,53 @@ podman generate systemd --name monitor --files --new
 systemctl --user daemon-reload
 systemctl --user enable --now container-monitor.service
 systemctl --user reload container-monitor.service
-
 ```
+
+# NFS & autofs
+7 	Perform following task on "node02" as "rhcsa9" user 
+	Configure autofs to automount the home directories of user "userautofs01". 
+
+Note the following: 
+server01.rhcsa9.momer.io(10.0.0.91), NFS-exports /shared to your system, 
+userautofs01 home directory is server01.rhcsa9.momer.io:/shared/userautofs01 
+userautofs01 home directory should be auto mounted locally at "/shared" as "/shared/userautofs01" 
+Home directories must be writable by the users when you login as "userautofs01" on "node02"
+
+solution
+# configure NFS server
+server01
+probably set up already in exam
+mkdir -p /shared
+useradd -u 1234 -d /shared/userautofs01 userautofs01
+
+dnf install -y nfs-utils
+systemctl enable --now nfs-server
+vim /etc/exports
+	/shared *(rw,no_root_squash)
+systemctl restart nfs-server
+firewall-cmd --add-service={nfs,mountd,rpc-bind} --permanenet
+firewall-cmd --reload
+showmount -e localhost
+
+ssh -p 2202 rhcsa9@node02
+sudo mkdir -p /shared
+sudo useradd -u 1234 -d /shared/userautofs01 userautofs01
+sudo dnf install -y autofs
+sudo dnf install -y nfs-utils
+showmount -e 10.0.0.91
+sudo vim /etc/auto.master
+	/shared /etc/auto.shared
+sudo vim /etc/auto.shared
+	* -rw	10.0.0.91:/shared/&
+ 
+	
+
+
+	
+
+
+
+
+
 
 
