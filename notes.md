@@ -7,5 +7,5 @@ vim *.repo - add gpgcheck=0
 dnf clean dbcache
 dnf install -y policycore*
 dnf install -y setroubleshoot*
-
+dnf whatprovides *semanage
 ```
