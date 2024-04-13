@@ -104,6 +104,7 @@ dnf install -y setroubleshoot*
 systemctl restart httpd
 
 journalctl
+less /var/log/messages
 man semanage-port
 
 semanage port -a -t http_port_t -p tcp 82
