@@ -13,6 +13,8 @@ http://server01/rhel9/BaseOS/
 10.0.0.15       appserver3
 
 ## NFS
+10.0.0.13
+/ourhome
 
 ## Container
 http://server01/materials/image.tar
