@@ -1,15 +1,50 @@
 # Questions
 
-1   break into node02
-    
-    setup repo on node02
-   
+
+1	fix http on server01; do not change port
+
+```
+dnf install -y setroubleshoot*
+systemctl start httpd
+journalctl
+emanage port -a -t http_port_t -p tcp 82
+firewall-cmd --add-port=82/tcp --permanent
+firewall-cmd --reload
+curl http://localhost:82
+```
+
+2	change http port to 80 on server01
+
+```
+vim /etc/httpd/conf/httpd.conf
+	Listen 80
+systemctl restart httpd
+systemctl status httpd
+firewall-cmd --add-service=http --permanent
+firewall-cmd --reload
+```
+
+3   break into node02 and reset root password
+
+solution 3
+```
+e at grub
+init=/bin/bash
+mount -o remount,rw /
+passwd root
+touch /.autorelabel
+exec /usr/lib/systemd/systemd
+```
+
+4. 	setup repo on node02
+  
         http://server01/rhel9/AppStream/
         http://server01/rhel9/BaseOS/
 
-solution 1
+solution 4
 ```
 # setup repos
+mandb
 man -k dnf
 man dnf-config-manager
 # G and scroll up to EXAMPLES
@@ -23,10 +58,10 @@ dnf repolist  # should show you local path now
 dnf install telnet # configm
 ```
 
-2      enable ssh on node02, do not change port
+5      enable ssh on node02, do not change port
     allow root to ssh
 
-solution 2
+solution 5
 ```
 # install troubleshooting
 dnf install -y coreutils setroubleshoot*
