@@ -84,11 +84,21 @@ sudo vim /etc/ssh/sshd_config
   PermitRootLogin yes
 
 systemctl enable --now sshd
+ssh root@node02 -p 2202
 ```
-3  http service on non-standard port 82 on appserver3 (10.0.0.13). the system is not able to connect to httpd service at port 82, fix the issue.
+
+6	setup ssh as root to node02 without password
+
+```
+workstation as root
+ssh-keygen
+ssh-copy-id -p 2202 root@node02
+```
+
+7  http service on non-standard port 82 on appserver3 (10.0.0.13). the system is not able to connect to httpd service at port 82, fix the issue.
 	don't change files under /var/www/html directory, should be accessible on port 82 and should start at boot time
 
- solution 3
+ solution 7
  ```
 dnf install -y setroubleshoot*
 systemctl restart httpd
@@ -105,10 +115,10 @@ firewall-cmd --reload
 
 ```
 
-4	Create a user devuser1 and build image(Name pdfconvert) from url docker.io/openviewdev/pdfconverter
+8	Create a user devuser1 and build image(Name pdfconvert) from url docker.io/openviewdev/pdfconverter
 	run  a container named monitor using the newly created image
 
- solution 4
+solution 8
 ```
 dnf install -y wget
 dnf install -y podman
@@ -126,13 +136,13 @@ sudo podman ps
 sudo podman exec -it pdfconvert /bin/bash # confirm you create container
 exit
 ```
-5	create a container using the image monitor which has been created above
+9	create a container using the image monitor which has been created above
 
 	* run container named monitor
  
  	* attach the volume /opt/input and /opt/processed with container /action/incoming/ and /action/outgoing/ respectively
 
-solution 5
+solution 9
 ```
 # as root
 mkdir -p /opt/input /opt/processed
@@ -154,7 +164,7 @@ podman run -dit --name monitor -v /opt/input/:/action/incoming/ -v /opt/processe
 pdoman exec -it monitor /bin/bash
 cd /action/incomiing
 ```
-6	create a service container-monitor.service
+10	create a service container-monitor.service
 	ensure that container-monitor.service will run automatically at system boot
 ```
 man -k podman-generate
@@ -169,7 +179,7 @@ systemctl --user reload container-monitor.service
 ```
 
 # NFS & autofs
-7 	Perform following task on "node02" as "rhcsa9" user 
+11	Perform following task on "node02" as "rhcsa9" user 
 	Configure autofs to automount the home directories of user "userautofs01". 
 
 Note the following: 
